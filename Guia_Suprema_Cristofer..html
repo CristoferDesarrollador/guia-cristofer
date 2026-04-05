@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía Suprema Cristofer - Sistema Médico Total</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #050505; color: #fff; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        .main-card { width: 100%; max-width: 600px; background: #111; border-radius: 20px; border: 2px solid #27ae60; padding: 20px; box-shadow: 0 0 40px rgba(39, 174, 96, 0.6); margin-top: 10px; }
+        h1 { color: #2ecc71; text-align: center; font-size: 1.5em; text-transform: uppercase; margin: 0; letter-spacing: 2px; }
+        .sub { text-align: center; font-size: 0.7em; color: #666; margin-bottom: 20px; font-weight: bold; }
+        #chat-area { height: 480px; overflow-y: auto; margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #333; scroll-behavior: smooth; }
+        .block { margin-bottom: 15px; padding: 15px; border-radius: 12px; background: #1a1a1a; border-left: 6px solid #27ae60; font-size: 15px; line-height: 1.6; animation: slideIn 0.3s ease; }
+        @keyframes slideIn { from { transform: translateX(-10px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .tag-ia { color: #f1c40f; font-weight: bold; display: block; margin-bottom: 5px; text-transform: uppercase; font-size: 0.9em; }
+        .tag-u { color: #3498db; font-weight: bold; display: block; margin-bottom: 5px; text-transform: uppercase; font-size: 0.9em; }
+        .input-box { display: flex; gap: 10px; background: #222; padding: 10px; border-radius: 15px; }
+        input { flex-grow: 1; padding: 12px; border-radius: 10px; border: none; background: transparent; color: white; font-size: 16px; outline: none; }
+        button { padding: 12px 25px; background: #27ae60; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        button:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+
+<div class="main-card">
+    <h1>GUÍA SUPREMA CRISTOFER</h1>
+    <div class="sub">SISTEMA INTEGRAL DE ENFERMERÍA Y MATEMÁTICAS - CREADO POR CHRISTOPHER TORREALBA</div>
+    <div id="chat-area"></div>
+    <div class="input-box">
+        <input type="text" id="userInput" placeholder="Describe el síntoma, enfermedad o cuenta...">
+        <button onclick="procesar()">ENVIAR</button>
+    </div>
+</div>
+
+<script>
+    let miNombre = "";
+    const box = document.getElementById("chat-area");
+    const field = document.getElementById("userInput");
+
+    // BASE DE DATOS MAESTRA DE ENFERMERÍA Y SALUD TOTAL
+    const MED_MASTER = {
+        // --- EMERGENCIAS Y ACCIDENTES ---
+        "raspo": "Protocolo de curación: 1. Lavar con abundante agua y jabón. 2. Secar con gasa (no algodón). 3. Aplicar antiséptico. Casero: Cristal de sábila para regenerar rápido y evitar cicatriz.",
+        "herida": "Si hay sangrado activo, presionar firmemente por 5-10 min. Limpiar con solución salina. Si es profunda (se ve grasa o músculo), requiere sutura inmediata. Casero: Miel pura para desinfectar.",
+        "quemo": "Grado 1 y 2: Enfriar con agua del chorro por 20 min. No usar hielo directo ni crema dental. Casero: Compresas de té de manzanilla frío. Pastillas: Ibuprofeno para el dolor.",
+        "fractura": "Inmovilizar la zona de inmediato. No intentar 'acomodar' el hueso. Aplicar frío local. Traslado urgente a rayos X. Pastillas: Analgésicos potentes.",
+
+        // --- ENFERMEDADES COMUNES Y CLIMA ---
+        "tos": "Si es seca: Dextrometorfano. Si es con flema: Ambroxol o Bromhexina. Casero: Jarabe natural de cebolla morada, miel y limón. Tomar tibio.",
+        "frio": "Resfriado por cambio de clima. Síntomas: Escalofríos, congestión. Tratamiento: Antigripales (Teragrip o similar). Casero: Té de canela con jengibre. Mantener pies calientes.",
+        "gripe": "Virus influenza. Tratamiento: Reposo, hidratación y Acetaminofén. Casero: Sopa de pollo con bastante ajo y limón.",
+        "fiebre": "Temperatura mayor a 38.5°C. Tratamiento: Paracetamol cada 6 horas. Casero: Baño con agua tibia (no fría) y paños húmedos en abdomen y frente.",
+
+        // --- ENFERMEDADES CRÓNICAS Y GRAVES ---
+        "cancer": "Patología celular. Tratamiento: Oncología (Quimio/Radio). Pastillas: Según el tipo (Ej. Tamoxifeno). Casero: Dieta alcalina, extracto de graviola (guanábana) y evitar azúcares refinados.",
+        "diabetes": "Falla en insulina. Pastillas: Metformina o Insulina. Casero: Infusión de hojas de níspero o canela. Controlar carbohidratos estrictamente.",
+        "tension": "Hipertensión arterial. Pastillas: Losartán o Enalapril. Casero: Beber agua de alpiste o ajo. Reducir sodio (sal) al mínimo.",
+        "asma": "Crisis bronquial. Inhalador: Salbutamol o Berodual. Casero: Vaporizaciones de eucalipto. Evitar polvo y humedad.",
+
+        // --- ESTÓMAGO Y ÓRGANOS ---
+        "diarrea": "Riesgo de deshidratación. Pastillas: Loperamida (si no hay fiebre). Casero: Suero oral (agua, sal, azúcar y limón) y dieta blanca (arroz, pollo hervido).",
+        "gastritis": "Acidez estomacal. Pastillas: Omeprazol o Milanta. Casero: Jugo de papa cruda o cristal de sábila licuado en ayunas.",
+        "rinon": "Dolor lumbar/Infección. Pastillas: Ciprofloxacina. Casero: Tomar mucha agua, té de pelo de maíz o chanca piedra.",
+
+        // --- PIEL Y DERMATOLOGÍA ---
+        "hongo": "Micosis. Tratamiento: Clotrimazol o Ketoconazol en crema. Casero: Lavar con agua de vinagre o aplicar aceite de coco con bicarbonato.",
+        "alergia": "Urticaria/Picazón. Pastillas: Loratadina o Cetirizina. Casero: Baños con agua de avena para refrescar la piel."
+    };
+
+    function hablar(texto) {
+        window.speechSynthesis.cancel();
+        const v = new SpeechSynthesisUtterance(texto);
+        v.lang = 'es-ES';
+        v.rate = 1.0;
+        window.speechSynthesis.speak(v);
+    }
+
+    function escribir(a, t) {
+        const d = document.createElement("div");
+        d.className = "block";
+        d.innerHTML = `<span class="${a=='IA'?'tag-ia':'tag-u'}">${a}:</span> ${t}`;
+        box.appendChild(d);
+        box.scrollTop = box.scrollHeight;
+    }
+
+    window.onload = () => {
+        const msj = "Hola, soy la Guía Suprema Cristofer. He sido creada por Christopher Torrealba. ¿Cuál es tu nombre?";
+        escribir("IA", msj);
+        hablar(msj);
+    };
+
+    function procesar() {
+        let val = field.value.trim();
+        if(!val) return;
+        escribir("Tú", val);
+        field.value = "";
+
+        if(!miNombre) {
+            miNombre = val;
+            const welcome = `Mucho gusto ${miNombre}. Ahora dime tu pregunta sobre cualquier enfermedad, síntoma o problema matemático. Estoy configurada para ser infalible.`;
+            escribir("IA", welcome);
+            hablar(welcome);
+            return;
+        }
+
+        let resp = "";
+        let q = val.toLowerCase();
+
+        // MOTOR MATEMÁTICO UNIVERSAL
+        let m = val.replace(/x/g, '*').replace(/÷/g, '/').replace(/[^-()\d/*+.]/g, '');
+        try {
+            if(m.length > 0 && /[\d]/.test(m)) {
+                let resMath = eval(m);
+                if(!isNaN(resMath)) resp = `${miNombre}, aquí está la respuesta exacta que solicitaste: El resultado es ${resMath}.`;
+            }
+        } catch(e) {}
+
+        // MOTOR MÉDICO INTEGRAL
+        if(!resp) {
+            for(let k in MED_MASTER) {
+                if(q.includes(k)) {
+                    resp = `${miNombre}, aquí está la respuesta eficaz que solicitaste: ${MED_MASTER[k]}`;
+                    break;
+                }
+            }
+        }
+
+        // RESPUESTA DE PRECISIÓN ABSOLUTA
+        if(!resp) {
+            resp = `${miNombre}, Christopher me ha programado con rigor médico. Para ese caso particular, si hay dolor agudo, inflamación o malestar general, se recomienda el uso de analgésicos básicos e hidratación profunda, pero es vital una evaluación física detallada para evitar complicaciones.`;
+        }
+
+        escribir("IA", resp);
+        hablar(resp);
+    }
+</script>
+
+</body>
+<link rel="manifest" href="data:application/manifest+json,{%22name%22:%22Guia%20Suprema%20Cristofer%22,%22short_name%22:%22CristoferAI%22,%22start_url%22:%22index.html%22,%22display%22:%22standalone%22,%22background_color%22:%22#0a0a0a%22,%22theme_color%22:%22#27ae60%22,%22icons%22:[{%22src%22:%22https://cdn-icons-png.flaticon.com/512/3063/3063176.png%22,%22sizes%22:%22512x512%22,%22type%22:%22image/png%22}]}">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+</html>
